@@ -6,13 +6,12 @@
 
 import tensorflow as tf
 
-
-# In[2]:
+# In[ ]:
 
 
 from tensorflow.keras import datasets, layers, models
 import matplotlib.pyplot as plt
-
+from keras.preprocessing import image
 
 # In[3]:
 
@@ -21,37 +20,32 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-
 # In[5]:
 
 
 TEST_IMG_DIR = "/Users/gauravkumar/Downloads/Data/isic-2024-challenge/train-image"
 TEST_CSV_DIR = "/Users/gauravkumar/Downloads/Data/isic-2024-challenge/train-metadata.csv"
 
-
 # In[7]:
 
 
 csv_data = pd.read_csv(TEST_CSV_DIR, low_memory=False);
-
 
 # In[8]:
 
 
 csv_data.columns
 
-
 # In[9]:
 
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-
 # In[10]:
 
 
 train_datagen = ImageDataGenerator(
-    rescale=1./512,
+    rescale=1. / 512,
     rotation_range=40,
     width_shift_range=0.2,
     height_shift_range=0.2,
@@ -60,7 +54,6 @@ train_datagen = ImageDataGenerator(
     horizontal_flip=True,
     fill_mode='nearest'
 )
-
 
 # In[11]:
 
@@ -72,18 +65,15 @@ train_generator = train_datagen.flow_from_directory(
     class_mode='binary'
 )
 
-
 # In[12]:
 
 
 train_generator.image_shape
 
-
 # In[19]:
 
 
 import matplotlib.pyplot as plt
-
 
 # In[17]:
 
@@ -117,30 +107,36 @@ def getCropImgs(img, needRotations=False):
 
 from sklearn.model_selection import train_test_split
 
+# In[39]:
+
+
+data_new = csv_data[['isic_id', 'target']]
+
+# In[40]:
+
+
+data_new.columns
 
 # In[25]:
 
 
-x_train, x_test, y_train, y_test = train_test_split(csv_data, csv_data['target'], test_size=0.33, random_state=4, stratify=csv_data['target'] )
-
+x_train, x_test, y_train, y_test = train_test_split(csv_data, csv_data['target'], test_size=0.33, random_state=4,
+                                                    stratify=csv_data['target'])
 
 # In[26]:
 
 
 x_train.columns
 
-
 # In[31]:
 
 
 y_train.size
 
-
 # In[32]:
 
 
-x_train.size 
-
+x_train.size
 
 # In[35]:
 
@@ -230,7 +226,7 @@ def train(batch_size, epochs):
         except:
             print("Training a new model")
 
-        model.fit(X_train, Y_train, epochs=epochs, batch_size=batch_size) # <>
+        model.fit(X_train, Y_train, epochs=epochs, batch_size=batch_size)  # <>
 
         # history = model.fit_generator(datagen.flow(X_train, Y_train, batch_size=batch_size),
         #                              epochs=epochs
@@ -266,6 +262,40 @@ def getAsSoftmax(fname):
     else:
         return [0, 1]
 
+
+# In[41]:
+
+
+def mean_pred(y_true, y_pred):
+    return K.mean(y_pred)
+
+
+# In[ ]:
+
+
+import os
+
+
+# In[ ]:
+
+
+def addImageDataToPd(basePath, data_new):
+    print("Hello---")
+    data_new['img'] = data_new.apply(lambda _: '', axis=1)
+    data_new['imgcrop'] = data_new.apply(lambda _: '', axis=1)
+    print("Hello1---")
+    # for i in data_new['isic_id']:
+    for i in range(4):
+        print("isic_id= " + data_new['isic_id'])
+        img = Image.open(os.path.join(os.path.join(basePath, "/"), data_new['isic_id'] + ".jpg"))
+        data_new['imgcrop'] = getCropImgs(img)
+        data_new['img'] = img
+
+
+# In[ ]:
+
+
+addImageDataToPd(TEST_IMG_DIR, data_new)
 
 # In[ ]:
 
